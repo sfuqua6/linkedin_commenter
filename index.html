@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Comment Engine</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0e0e10;
+      --surface: #151517;
+      --border: rgba(255,255,255,0.055);
+      --text: #cdc8be;
+      --text-dim: rgba(255,255,255,0.32);
+      --text-faint: rgba(255,255,255,0.16);
+      --accent: #c9804d;
+      --accent-soft: rgba(201,128,77,0.1);
+      --serif: 'Instrument Serif', Georgia, serif;
+      --mono: 'IBM Plex Mono', 'SF Mono', Menlo, monospace;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html {
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--mono);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Grain overlay ─────────────────────────────── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+      background-size: 200px;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* ── Layout ─────────────────────────────────────── */
+    .page {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 0 28px;
+    }
+
+    /* ── Nav ────────────────────────────────────────── */
+    nav {
+      padding: 36px 0 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 100px;
+      opacity: 0;
+      animation: fadeUp 0.6s ease forwards;
+    }
+
+    .nav-mark {
+      width: 10px;
+      height: 10px;
+      background: var(--accent);
+      border-radius: 2px;
+      transform: rotate(45deg);
+      flex-shrink: 0;
+    }
+
+    nav span {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    nav a {
+      margin-left: auto;
+      font-size: 11px;
+      color: var(--text-dim);
+      text-decoration: none;
+      letter-spacing: 0.03em;
+      transition: color 0.2s;
+    }
+
+    nav a:hover { color: var(--accent); }
+
+    /* ── Hero ───────────────────────────────────────── */
+    .hero {
+      margin-bottom: 80px;
+      opacity: 0;
+      animation: fadeUp 0.7s ease 0.1s forwards;
+    }
+
+    .hero h1 {
+      font-family: var(--serif);
+      font-weight: 400;
+      font-size: clamp(48px, 8vw, 72px);
+      line-height: 1.05;
+      letter-spacing: -0.025em;
+      color: var(--text);
+      margin-bottom: 28px;
+    }
+
+    .hero h1 em {
+      color: var(--accent);
+      font-style: italic;
+    }
+
+    .hero-sub {
+      font-size: 13px;
+      line-height: 1.7;
+      color: var(--text-dim);
+      max-width: 440px;
+      letter-spacing: 0.01em;
+    }
+
+    /* ── Download block ────────────────────────────── */
+    .download {
+      margin-bottom: 100px;
+      opacity: 0;
+      animation: fadeUp 0.7s ease 0.2s forwards;
+    }
+
+    .download-card {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 32px;
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      gap: 28px;
+    }
+
+    .download-left { flex: 1; }
+
+    .download-label {
+      font-size: 9px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--text-faint);
+      margin-bottom: 10px;
+    }
+
+    .download-title {
+      font-family: var(--serif);
+      font-size: 22px;
+      font-weight: 400;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .download-meta {
+      font-size: 11px;
+      color: var(--text-dim);
+      letter-spacing: 0.02em;
+    }
+
+    .download-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 28px;
+      background: var(--accent);
+      color: #0e0e10;
+      border: none;
+      border-radius: 8px;
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-decoration: none;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.15s;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .download-btn:hover {
+      opacity: 0.88;
+      transform: translateY(-1px);
+    }
+
+    .download-btn:active { transform: translateY(0); }
+
+    .download-arrow {
+      display: inline-block;
+      transition: transform 0.2s;
+    }
+
+    .download-btn:hover .download-arrow {
+      transform: translateY(2px);
+    }
+
+    /* ── Steps ──────────────────────────────────────── */
+    .steps {
+      margin-bottom: 100px;
+      opacity: 0;
+      animation: fadeUp 0.7s ease 0.3s forwards;
+    }
+
+    .section-label {
+      font-size: 9px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--text-faint);
+      margin-bottom: 32px;
+    }
+
+    .step {
+      display: grid;
+      grid-template-columns: 32px 1fr;
+      gap: 16px;
+      margin-bottom: 28px;
+      align-items: start;
+    }
+
+    .step:last-child { margin-bottom: 0; }
+
+    .step-num {
+      width: 32px;
+      height: 32px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-dim);
+      flex-shrink: 0;
+    }
+
+    .step-content h3 {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 4px;
+      letter-spacing: -0.01em;
+    }
+
+    .step-content p {
+      font-size: 12px;
+      line-height: 1.6;
+      color: var(--text-dim);
+    }
+
+    .step-content code {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      padding: 1px 6px;
+      border-radius: 3px;
+      font-size: 11px;
+      color: var(--accent);
+    }
+
+    /* ── Provider grid ─────────────────────────────── */
+    .providers {
+      margin-bottom: 100px;
+      opacity: 0;
+      animation: fadeUp 0.7s ease 0.35s forwards;
+    }
+
+    .provider-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .prov-card {
+      padding: 20px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface);
+      transition: border-color 0.2s;
+    }
+
+    .prov-card:hover { border-color: rgba(255,255,255,0.1); }
+
+    .prov-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 4px;
+      letter-spacing: -0.01em;
+    }
+
+    .prov-detail {
+      font-size: 11px;
+      color: var(--text-dim);
+      line-height: 1.5;
+    }
+
+    .prov-tag {
+      display: inline-block;
+      margin-top: 10px;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: var(--accent-soft);
+      padding: 3px 8px;
+      border-radius: 3px;
+    }
+
+    /* ── Architecture ──────────────────────────────── */
+    .arch {
+      margin-bottom: 100px;
+      opacity: 0;
+      animation: fadeUp 0.7s ease 0.4s forwards;
+    }
+
+    .arch-diagram {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 32px;
+      background: var(--surface);
+    }
+
+    .arch-row {
+      display: flex;
+      align-items: stretch;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .arch-row:last-child { margin-bottom: 0; }
+
+    .arch-block {
+      flex: 1;
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg);
+    }
+
+    .arch-block-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 6px;
+    }
+
+    .arch-block-file {
+      font-size: 12px;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .arch-block-desc {
+      font-size: 11px;
+      color: var(--text-dim);
+      line-height: 1.5;
+    }
+
+    .arch-block.plug {
+      border-style: dashed;
+      border-color: rgba(201,128,77,0.25);
+      background: rgba(201,128,77,0.03);
+    }
+
+    .arch-connector {
+      text-align: center;
+      padding: 6px 0;
+      font-size: 11px;
+      color: var(--text-faint);
+      letter-spacing: 0.1em;
+    }
+
+    /* ── Tones ─────────────────────────────────────── */
+    .tones {
+      margin-bottom: 100px;
+      opacity: 0;
+      animation: fadeUp 0.7s ease 0.42s forwards;
+    }
+
+    .tone-list {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .tone-item {
+      padding: 18px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+
+    .tone-name {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .tone-desc {
+      font-size: 11px;
+      color: var(--text-dim);
+      line-height: 1.55;
+    }
+
+    /* ── Footer ────────────────────────────────────── */
+    footer {
+      padding: 40px 0 48px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      opacity: 0;
+      animation: fadeUp 0.7s ease 0.5s forwards;
+    }
+
+    footer .nav-mark {
+      width: 7px;
+      height: 7px;
+    }
+
+    footer span {
+      font-size: 11px;
+      color: var(--text-faint);
+      letter-spacing: 0.02em;
+    }
+
+    footer a {
+      margin-left: auto;
+      font-size: 11px;
+      color: var(--text-dim);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    footer a:hover { color: var(--accent); }
+
+    /* ── Animation ─────────────────────────────────── */
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(16px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ── Responsive ────────────────────────────────── */
+    @media (max-width: 600px) {
+      .page { padding: 0 20px; }
+      nav { margin-bottom: 64px; }
+      .hero { margin-bottom: 56px; }
+      .download-card {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 20px;
+      }
+      .download-btn { text-align: center; justify-content: center; }
+      .provider-grid, .tone-list { grid-template-columns: 1fr; }
+      .arch-row { flex-direction: column; }
+      .hero h1 { font-size: 40px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <!-- Nav -->
+    <nav>
+      <div class="nav-mark"></div>
+      <span>Comment Engine</span>
+      <a href="https://github.com">source</a>
+    </nav>
+
+    <!-- Hero -->
+    <div class="hero">
+      <h1>Draft <em>sharp</em><br>comments.</h1>
+      <p class="hero-sub">
+        A Chrome extension that lives on LinkedIn. Pick a tone,
+        generate drafts, paste with one click. Bring your own AI —
+        Anthropic, OpenAI, Ollama, or any compatible endpoint.
+      </p>
+    </div>
+
+    <!-- Download -->
+    <div class="download">
+      <div class="download-card">
+        <div class="download-left">
+          <div class="download-label">Chrome Extension</div>
+          <div class="download-title">comment-engine.zip</div>
+          <div class="download-meta">v1.1.0 · 60kb · Manifest V3</div>
+        </div>
+        <a class="download-btn" href="comment-engine.zip" download>
+          Download <span class="download-arrow">↓</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Setup steps -->
+    <div class="steps">
+      <div class="section-label">Setup</div>
+
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h3>Unzip and load</h3>
+          <p>Open <code>chrome://extensions</code> → enable Developer Mode → Load Unpacked → select the folder.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h3>Connect a provider</h3>
+          <p>Click the diamond icon in your toolbar. Pick Anthropic, OpenAI, Ollama, or any custom endpoint. Enter your key if needed.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h3>Use it</h3>
+          <p>Go to linkedin.com. Every post now has a <strong>Draft</strong> button. Click it, pick a tone, generate, paste.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Providers -->
+    <div class="providers">
+      <div class="section-label">Bring Your Own AI</div>
+      <div class="provider-grid">
+        <div class="prov-card">
+          <div class="prov-name">Anthropic</div>
+          <div class="prov-detail">Claude Sonnet 4, Haiku 4.5</div>
+          <div class="prov-tag">API key</div>
+        </div>
+        <div class="prov-card">
+          <div class="prov-name">OpenAI</div>
+          <div class="prov-detail">GPT-4o, GPT-4o Mini</div>
+          <div class="prov-tag">API key</div>
+        </div>
+        <div class="prov-card">
+          <div class="prov-name">Ollama</div>
+          <div class="prov-detail">Llama, Mistral, Gemma, Phi</div>
+          <div class="prov-tag">Local · no key</div>
+        </div>
+        <div class="prov-card">
+          <div class="prov-name">Custom</div>
+          <div class="prov-detail">Any OpenAI-compatible endpoint</div>
+          <div class="prov-tag">Any backend</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Architecture -->
+    <div class="arch">
+      <div class="section-label">Architecture</div>
+      <div class="arch-diagram">
+        <div class="arch-row">
+          <div class="arch-block">
+            <div class="arch-block-label">UI</div>
+            <div class="arch-block-file">content.js</div>
+            <div class="arch-block-desc">Injects buttons, manages modal, renders results. Pure DOM — no AI logic.</div>
+          </div>
+        </div>
+        <div class="arch-connector">↕</div>
+        <div class="arch-row">
+          <div class="arch-block">
+            <div class="arch-block-label">Engine</div>
+            <div class="arch-block-file">engine.js</div>
+            <div class="arch-block-desc">Post extraction, prompt construction, response parsing. Provider-agnostic.</div>
+          </div>
+        </div>
+        <div class="arch-connector">↕ plug-in seam</div>
+        <div class="arch-row">
+          <div class="arch-block plug">
+            <div class="arch-block-label">Provider</div>
+            <div class="arch-block-file">providers.js</div>
+            <div class="arch-block-desc">Self-contained adapters. Remove this file entirely — everything else still works.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tones -->
+    <div class="tones">
+      <div class="section-label">Tones</div>
+      <div class="tone-list">
+        <div class="tone-item">
+          <div class="tone-name">Thoughtful</div>
+          <div class="tone-desc">Adds nuance. Asks a smart follow-up. Sounds like someone who sat with the idea.</div>
+        </div>
+        <div class="tone-item">
+          <div class="tone-name">Contrarian</div>
+          <div class="tone-desc">Respectful pushback. Offers what the post might be missing.</div>
+        </div>
+        <div class="tone-item">
+          <div class="tone-name">Storyteller</div>
+          <div class="tone-desc">Brief personal anecdote that connects. Two sentences of story, one of takeaway.</div>
+        </div>
+        <div class="tone-item">
+          <div class="tone-name">Tactical</div>
+          <div class="tone-desc">Concrete tip or framework. Specific enough to act on today.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+      <div class="nav-mark"></div>
+      <span>All API calls go browser → provider. Nothing proxied.</span>
+      <a href="https://github.com">GitHub</a>
+    </footer>
+
+  </div>
+</body>
+</html>
