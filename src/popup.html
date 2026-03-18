@@ -4,143 +4,198 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Comment Engine</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --bg:          #0e0e10;
+      --surface:     #151517;
+      --border:      rgba(255,255,255,0.07);
+      --text:        #cdc8be;
+      --text-dim:    rgba(255,255,255,0.38);
+      --text-faint:  rgba(255,255,255,0.18);
+      --accent:      #c9804d;
+      --accent-soft: rgba(201,128,77,0.12);
+      --mono:        'IBM Plex Mono', 'SF Mono', Menlo, monospace;
+    }
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      font-size: 13px;
-      color: #111827;
-      background: #fff;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text);
+      background: var(--bg);
       width: 300px;
-      padding: 14px 16px 16px;
+      padding: 14px 16px 18px;
+      -webkit-font-smoothing: antialiased;
     }
 
-    /* ── Advanced settings link — always at top ─────────────────────────── */
-    .advanced-link {
+    /* ── Header ── */
+    .header {
       display: flex;
       align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .wordmark {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .diamond {
+      width: 9px;
+      height: 9px;
+      background: var(--accent);
+      border-radius: 2px;
+      transform: rotate(45deg);
+      flex-shrink: 0;
+    }
+
+    .wordmark span {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    /* ── Advanced settings link — always at top ── */
+    .advanced-link {
+      display: inline-flex;
+      align-items: center;
       gap: 4px;
-      font-size: 12px;
-      color: #6b7280;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      color: var(--text-faint);
       text-decoration: none;
-      margin-bottom: 14px;
-      width: fit-content;
+      text-transform: uppercase;
+      transition: color 0.15s;
     }
-    .advanced-link:hover { color: #0a66c2; }
-    .advanced-link svg { flex-shrink: 0; }
+    .advanced-link:hover { color: var(--accent); }
 
-    /* ── Divider ─────────────────────────────────────────────────────────── */
-    hr {
+    /* ── Divider ── */
+    .divider {
       border: none;
-      border-top: 1px solid #e5e7eb;
-      margin: 12px 0;
+      border-top: 1px solid var(--border);
+      margin: 14px 0;
     }
 
-    /* ── Section headings ────────────────────────────────────────────────── */
-    h2 {
-      font-size: 15px;
-      font-weight: 700;
-      margin-bottom: 12px;
-    }
-
+    /* ── Labels ── */
     label {
       display: block;
-      font-size: 11px;
+      font-size: 9px;
       font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: #6b7280;
-      margin-bottom: 4px;
-      margin-top: 10px;
+      letter-spacing: 0.1em;
+      color: var(--text-faint);
+      margin-bottom: 5px;
+      margin-top: 12px;
     }
     label:first-of-type { margin-top: 0; }
 
+    /* ── Inputs ── */
     input[type="text"],
     input[type="password"],
-    input[type="url"],
-    select {
+    input[type="url"] {
       width: 100%;
       padding: 7px 10px;
-      border: 1px solid #d1d5db;
-      border-radius: 6px;
-      font-size: 13px;
-      color: #111827;
-      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text);
+      background: var(--surface);
       outline: none;
-      transition: border-color 0.12s;
+      transition: border-color 0.15s;
     }
-    input:focus, select:focus { border-color: #0a66c2; }
+    input::placeholder { color: var(--text-faint); }
+    input:focus { border-color: var(--accent); }
 
-    /* Preset chips */
+    /* ── Preset chips ── */
     .presets {
       display: flex;
       flex-wrap: wrap;
-      gap: 5px;
+      gap: 4px;
       margin-top: 6px;
     }
     .preset-chip {
-      font-size: 11px;
-      padding: 3px 9px;
-      border: 1px solid #d1d5db;
-      border-radius: 12px;
-      background: #f9fafb;
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 500;
+      padding: 3px 8px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: transparent;
       cursor: pointer;
-      color: #374151;
-      transition: all 0.1s;
+      color: var(--text-dim);
+      letter-spacing: 0.03em;
+      transition: all 0.12s;
     }
     .preset-chip:hover {
-      border-color: #0a66c2;
-      color: #0a66c2;
-      background: #eff6ff;
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-soft);
     }
 
     .hint {
-      font-size: 11px;
-      color: #9ca3af;
-      margin-top: 4px;
+      font-size: 10px;
+      color: var(--text-faint);
+      margin-top: 5px;
+      line-height: 1.5;
     }
 
-    /* ── Save button ─────────────────────────────────────────────────────── */
+    /* ── Save button ── */
     .btn-save {
       width: 100%;
-      margin-top: 14px;
+      margin-top: 16px;
       padding: 8px;
-      background: #0a66c2;
-      color: #fff;
-      font-size: 13px;
+      background: var(--accent);
+      color: var(--bg);
+      font-family: var(--mono);
+      font-size: 11px;
       font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
       border: none;
-      border-radius: 6px;
+      border-radius: 5px;
       cursor: pointer;
       transition: opacity 0.12s;
     }
-    .btn-save:hover { opacity: 0.88; }
+    .btn-save:hover { opacity: 0.85; }
 
     #status {
-      font-size: 12px;
-      color: #16a34a;
+      font-size: 10px;
+      color: var(--accent);
       text-align: center;
-      margin-top: 8px;
-      min-height: 18px;
+      margin-top: 7px;
+      min-height: 14px;
+      letter-spacing: 0.04em;
     }
   </style>
 </head>
 <body>
 
-  <!-- Advanced settings always at top -->
-  <a class="advanced-link" href="options.html" target="_blank">
-    <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8">
-      <circle cx="10" cy="10" r="3"/>
-      <path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.22 4.22l1.42 1.42M14.36 14.36l1.42 1.42M4.22 15.78l1.42-1.42M14.36 5.64l1.42-1.42"/>
-    </svg>
-    Advanced settings
-  </a>
+  <div class="header">
+    <div class="wordmark">
+      <div class="diamond"></div>
+      <span>Comment Engine</span>
+    </div>
+    <a class="advanced-link" href="options.html" target="_blank">
+      <svg width="11" height="11" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8">
+        <circle cx="10" cy="10" r="3"/>
+        <path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.22 4.22l1.42 1.42M14.36 14.36l1.42 1.42M4.22 15.78l1.42-1.42M14.36 5.64l1.42-1.42"/>
+      </svg>
+      Settings
+    </a>
+  </div>
 
-  <h2>Comment Engine</h2>
+  <hr class="divider">
 
-  <!-- Endpoint -->
-  <label for="endpoint">Endpoint URL</label>
+  <label for="endpoint">Endpoint</label>
   <input type="url" id="endpoint" placeholder="https://api.openai.com/v1/chat/completions">
   <div class="presets">
     <button class="preset-chip" data-endpoint="https://api.openai.com/v1/chat/completions">OpenAI</button>
@@ -149,14 +204,12 @@
     <button class="preset-chip" data-endpoint="http://localhost:11434/v1/chat/completions">Ollama</button>
   </div>
 
-  <!-- Model -->
   <label for="model">Model</label>
-  <input type="text" id="model" placeholder="e.g. gpt-4o, claude-sonnet-4-6, deepseek-chat">
+  <input type="text" id="model" placeholder="gpt-4o-mini, deepseek-chat, llama3.2…">
 
-  <!-- API Key -->
-  <label for="apiKey">API Key <span style="font-weight:400;text-transform:none">(leave blank if not needed)</span></label>
-  <input type="password" id="apiKey" placeholder="sk-…">
-  <p class="hint">Stored locally in Chrome. Never sent anywhere except the endpoint above.</p>
+  <label for="apiKey">API Key</label>
+  <input type="password" id="apiKey" placeholder="sk-… (leave blank if not needed)">
+  <p class="hint">Stored in Chrome sync. Sent only to the endpoint above.</p>
 
   <button class="btn-save" id="save">Save</button>
   <div id="status"></div>
@@ -164,42 +217,36 @@
   <script>
     const $ = id => document.getElementById(id);
 
-    // Load saved settings
     chrome.storage.sync.get({ endpoint: '', model: '', apiKey: '' }, data => {
       $('endpoint').value = data.endpoint;
       $('model').value    = data.model;
       $('apiKey').value   = data.apiKey;
     });
 
-    // Preset chips fill the endpoint field and suggest a default model
     const MODEL_DEFAULTS = {
-      'https://api.openai.com/v1/chat/completions':       'gpt-4o-mini',
-      'https://api.anthropic.com/v1/messages':            'claude-haiku-4-5-20251001',
-      'https://api.deepseek.com/v1/chat/completions':     'deepseek-chat',
-      'http://localhost:11434/v1/chat/completions':        'llama3.2',
+      'https://api.openai.com/v1/chat/completions':   'gpt-4o-mini',
+      'https://api.anthropic.com/v1/messages':        'claude-haiku-4-5-20251001',
+      'https://api.deepseek.com/v1/chat/completions': 'deepseek-chat',
+      'http://localhost:11434/v1/chat/completions':    'llama3.2',
     };
 
     document.querySelectorAll('.preset-chip').forEach(chip => {
       chip.addEventListener('click', () => {
         const ep = chip.dataset.endpoint;
         $('endpoint').value = ep;
-        if (!$('model').value && MODEL_DEFAULTS[ep]) {
-          $('model').value = MODEL_DEFAULTS[ep];
-        }
+        if (!$('model').value && MODEL_DEFAULTS[ep]) $('model').value = MODEL_DEFAULTS[ep];
         $('endpoint').focus();
       });
     });
 
-    // Save
     $('save').addEventListener('click', () => {
-      const data = {
+      chrome.storage.sync.set({
         endpoint: $('endpoint').value.trim(),
         model:    $('model').value.trim(),
         apiKey:   $('apiKey').value.trim(),
-      };
-      chrome.storage.sync.set(data, () => {
+      }, () => {
         const s = $('status');
-        s.textContent = 'Saved!';
+        s.textContent = 'Saved.';
         setTimeout(() => { s.textContent = ''; }, 1800);
       });
     });
