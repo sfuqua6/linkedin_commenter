@@ -159,9 +159,14 @@
       if (!box) return;
       box.focus();
 
-      // Use execCommand for compatibility with LinkedIn's React-managed inputs
+      // Clear then insert — selectAllChildren + insertText replaces existing content,
+      // but some LinkedIn states leave an empty <br> that shifts the cursor.
+      // Selecting the full range ensures a clean paste.
       const sel = window.getSelection();
-      sel.selectAllChildren(box);
+      const range = document.createRange();
+      range.selectNodeContents(box);
+      sel.removeAllRanges();
+      sel.addRange(range);
       document.execCommand('insertText', false, text);
 
       closeModal();
