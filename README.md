@@ -12,14 +12,19 @@ Draft sharp LinkedIn comments. Bring your own AI.
 
 ## Configure
 
-Click the extension icon → pick a provider → enter your key → save.
+Click the extension icon. The **Advanced settings** gear link is at the top of the popup if you want to set your voice first.
 
-| Provider | Key format | Notes |
-|---|---|---|
-| Anthropic | `sk-ant-...` | console.anthropic.com |
-| OpenAI | `sk-...` | platform.openai.com |
-| Ollama | none | Must be running locally |
-| Custom | optional | Any OpenAI-compatible endpoint |
+To connect a model, fill in three fields:
+
+| Field | What to enter |
+|---|---|
+| **Endpoint URL** | Your provider's API URL. Use a preset chip or paste any URL. |
+| **Model** | The model name, e.g. `gpt-4o-mini`, `claude-haiku-4-5-20251001`, `deepseek-chat`, `llama3.2` |
+| **API Key** | Your key (leave blank for Ollama or keyless endpoints) |
+
+Preset chips auto-fill the endpoint and suggest a default model for OpenAI, Anthropic, DeepSeek, and Ollama. Any OpenAI-compatible endpoint works — the extension routes automatically based on the URL.
+
+**Reasoning models** (DeepSeek R1, Anthropic extended thinking) are supported. `<think>`, `<thinking>`, and `<reasoning>` blocks are stripped before comments are shown.
 
 ## Use
 
@@ -37,12 +42,13 @@ Click the extension icon → pick a provider → enter your key → save.
 
 ## Advanced settings
 
-Click "advanced settings" in the popup to configure:
+The gear link at the **top of the popup** opens the advanced settings page:
 
-- **System prompt** — set your voice and persona
-- **Your role** — so comments sound like you
-- **Your topics** — keeps comments in your lane
-- **Length and draft count** — control output shape
+- **System prompt** — overrides the built-in prompt entirely; set your voice and persona
+- **Your role** — added to every prompt so comments sound like you
+- **Your topics** — keeps comments within your areas of expertise
+- **Length** — short (1–2 sentences), medium (2–4), or long (4–6)
+- **Draft count** — generate 1, 2, or 3 drafts per request
 
 ## Architecture
 
@@ -54,7 +60,7 @@ engine.js   — Core logic. Post extraction, prompt building, response parsing.
 providers.js — AI adapters. Each provider is a self-contained module.
 ```
 
-The AI provider is a plug-in. Remove `providers.js` entirely and the UI still loads — it just shows "no provider configured." Swap in a different AI backend by adding an adapter to the `adapters` object in `providers.js`.
+The provider layer auto-detects the API style from the endpoint URL — Anthropic's Messages API for `api.anthropic.com`, OpenAI-compatible chat completions for everything else. Swap in any backend by pointing to a different endpoint.
 
 ## Privacy
 
