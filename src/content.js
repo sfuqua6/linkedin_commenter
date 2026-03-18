@@ -179,35 +179,68 @@
   // -------------------------------------------------------------------------
   // Inject Draft buttons into posts
   // -------------------------------------------------------------------------
-  function injectButton(postElement) {
-    if (postElement.querySelector('.ce-draft-btn')) return; // already injected
 
-    const actionBar = postElement.querySelector(
-      '.feed-shared-social-action-bar, .social-actions-bar, [data-test-id="social-actions__comment"]'
-    )?.parentElement;
+  // Find the action bar row inside a post — tries multiple strategies.
+  function findActionBar(postEl) {
+    // 1. Stable class names (still present on many LinkedIn builds)
+    const byClass = postEl.querySelector(
+      '.feed-shared-social-action-bar, .social-details-social-activity__action-bar, [class*="social-action-bar"]'
+    );
+    if (byClass) return byClass;
 
-    const anchor = actionBar ||
-      postElement.querySelector('.feed-shared-social-counts, .update-v2-social-activity');
+    // 2. Walk up from the Comment button — aria-label is the most stable signal
+    const commentBtn = postEl.querySelector(
+      'button[aria-label*="comment" i], button[aria-label*="Comment"]'
+    );
+    if (commentBtn) return commentBtn.closest('div') || commentBtn.parentElement;
 
-    if (!anchor) return;
+    // 3. Walk up from Like button
+    const likeBtn = postEl.querySelector(
+      'button[aria-label*="like" i], button[aria-label*="Like"]'
+    );
+    if (likeBtn) return likeBtn.closest('div') || likeBtn.parentElement;
+
+    return null;
+  }
+
+  function injectButton(postEl) {
+    if (postEl.querySelector('.ce-draft-btn')) return; // already injected
+
+    const actionBar = findActionBar(postEl);
+    if (!actionBar) return;
 
     const btn = document.createElement('button');
     btn.className = 'ce-draft-btn';
     btn.textContent = 'Draft';
-    btn.title = 'Generate a comment with Comment Engine';
+    btn.title = 'Draft a comment with Comment Engine';
     btn.addEventListener('click', e => {
       e.stopPropagation();
-      openModal(postElement);
+      openModal(postEl);
     });
 
-    anchor.appendChild(btn);
+    actionBar.appendChild(btn);
   }
 
+  // Scan using multiple strategies so we catch posts regardless of LinkedIn's
+  // current class names.
   function scanPosts() {
-    const posts = document.querySelectorAll(
-      '.feed-shared-update-v2, [data-urn][data-id], .occludable-update'
-    );
-    posts.forEach(injectButton);
+    // Strategy A: known post wrapper class names
+    document.querySelectorAll(
+      '.feed-shared-update-v2, .occludable-update, [data-id][data-urn]'
+    ).forEach(injectButton);
+
+    // Strategy B: find via Comment button → walk up to the post container
+    document.querySelectorAll(
+      'button[aria-label*="comment" i], button[aria-label*="Comment"]'
+    ).forEach(commentBtn => {
+      if (commentBtn.classList.contains('ce-draft-btn')) return;
+      const post =
+        commentBtn.closest('.feed-shared-update-v2') ||
+        commentBtn.closest('.occludable-update')     ||
+        commentBtn.closest('[data-id]')              ||
+        commentBtn.closest('article');
+      if (post) injectButton(post);
+    });
   }
 
   // -------------------------------------------------------------------------
