@@ -10,6 +10,7 @@ chrome.storage.local.get({ endpoint: '', model: '', apiKey: '' }, data => {
   $('apiKey').value   = data.apiKey;
 });
 
+// Default models for preset endpoints (mirrors Providers.MODEL_DEFAULTS)
 const MODEL_DEFAULTS = {
   'https://api.openai.com/v1/chat/completions':   'gpt-4o-mini',
   'https://api.anthropic.com/v1/messages':        'claude-haiku-4-5-20251001',
@@ -40,7 +41,8 @@ document.querySelectorAll('.preset-chip').forEach(chip => {
   chip.addEventListener('click', () => {
     const ep = chip.dataset.endpoint;
     $('endpoint').value = ep;
-    if (!$('model').value && MODEL_DEFAULTS[ep]) $('model').value = MODEL_DEFAULTS[ep];
+    // Always set the matching default model when switching presets
+    if (MODEL_DEFAULTS[ep]) $('model').value = MODEL_DEFAULTS[ep];
     saveSettings();
   });
 });

@@ -16,6 +16,11 @@
   // -------------------------------------------------------------------------
   let modal = null;
   let currentPostElement = null;
+  let activeAbort = null;
+
+  function onEscape(e) {
+    if (e.key === 'Escape') closeModal();
+  }
 
   function buildModal() {
     const el = document.createElement('div');
@@ -42,10 +47,6 @@
       btn.addEventListener('click', () => handleGenerate(btn.dataset.tone));
     });
 
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Escape') closeModal();
-    });
-
     return el;
   }
 
@@ -56,11 +57,14 @@
     modal.querySelector('#ce-status').textContent = 'Pick a tone to generate.';
     modal.querySelectorAll('.ce-tone').forEach(b => b.classList.remove('active'));
     modal.style.display = 'flex';
+    document.addEventListener('keydown', onEscape);
   }
 
   function closeModal() {
+    if (activeAbort) { activeAbort.abort(); activeAbort = null; }
     if (modal) modal.style.display = 'none';
     currentPostElement = null;
+    document.removeEventListener('keydown', onEscape);
   }
 
   // -------------------------------------------------------------------------
@@ -68,6 +72,10 @@
   // -------------------------------------------------------------------------
   async function handleGenerate(tone) {
     if (!currentPostElement) return;
+
+    // Abort any in-flight request
+    if (activeAbort) activeAbort.abort();
+    activeAbort = new AbortController();
 
     const output = modal.querySelector('#ce-output');
     const status = modal.querySelector('#ce-status');
@@ -78,13 +86,13 @@
 
     try {
       const settings = await Engine.loadSettings();
-      if (!settings.endpoint || !settings.model) {
-        throw new Error('No model configured. Click the extension icon to set one up.');
-      }
-      const drafts = await Engine.generate({ postElement: currentPostElement, tone, settings });
+      const drafts = await Engine.generate({
+        postElement: currentPostElement, tone, settings, signal: activeAbort.signal,
+      });
       renderDrafts(drafts);
       status.textContent = drafts.length > 1 ? `${drafts.length} drafts generated.` : 'Draft ready.';
     } catch (err) {
+      if (err.name === 'AbortError') return; // user switched tones, ignore
       output.innerHTML = `<p class="ce-error">${escapeHtml(err.message)}</p>`;
       status.textContent = 'Error.';
     }
@@ -166,11 +174,9 @@
       '[data-test-id="comment-box__form"] [contenteditable="true"]',
       '.editor-content[contenteditable="true"]',
     ];
-    // Search within and near the post
+    const scope = postElement.closest('.feed-shared-update-v2') || postElement;
     for (const sel of selectors) {
-      const el = postElement.querySelector(sel) ||
-                 postElement.closest('.feed-shared-update-v2')?.querySelector(sel) ||
-                 document.querySelector(sel);
+      const el = scope.querySelector(sel);
       if (el) return el;
     }
     return null;
@@ -179,8 +185,10 @@
   // -------------------------------------------------------------------------
   // Inject Draft buttons into posts
   // -------------------------------------------------------------------------
+  const injected = new WeakSet();
+
   function injectButton(postElement) {
-    if (postElement.querySelector('.ce-draft-btn')) return; // already injected
+    if (injected.has(postElement)) return;
 
     const actionBar = postElement.querySelector(
       '.feed-shared-social-action-bar, .social-actions-bar, [data-test-id="social-actions__comment"]'
@@ -190,6 +198,8 @@
       postElement.querySelector('.feed-shared-social-counts, .update-v2-social-activity');
 
     if (!anchor) return;
+
+    injected.add(postElement);
 
     const btn = document.createElement('button');
     btn.className = 'ce-draft-btn';
@@ -211,9 +221,17 @@
   }
 
   // -------------------------------------------------------------------------
-  // MutationObserver — pick up dynamically loaded posts
+  // MutationObserver — debounced to avoid thrashing on LinkedIn's busy DOM
   // -------------------------------------------------------------------------
-  const observer = new MutationObserver(() => scanPosts());
+  let scanTimer = null;
+
+  const observer = new MutationObserver(() => {
+    if (scanTimer) return;
+    scanTimer = requestAnimationFrame(() => {
+      scanTimer = null;
+      scanPosts();
+    });
+  });
   observer.observe(document.body, { childList: true, subtree: true });
   scanPosts();
 

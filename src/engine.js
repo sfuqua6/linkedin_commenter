@@ -26,12 +26,9 @@ const Engine = (() => {
   // explicit delimiters like "---", "Draft 1:", "Option 1:", numbered items, etc.
   function splitDrafts(text, expectedCount) {
     // Try explicit numbered draft headers first
-    const headerPattern = /(?:^|\n)(?:draft|option|comment)\s*\d+\s*[:\-]/gi;
-    if (headerPattern.test(text)) {
-      const parts = text.split(/(?:^|\n)(?:draft|option|comment)\s*\d+\s*[:\-]/gi)
-        .map(s => s.trim()).filter(Boolean);
-      if (parts.length > 1) return parts;
-    }
+    const parts = text.split(/(?:^|\n)(?:draft|option|comment)\s*\d+\s*[:\-]/gi)
+      .map(s => s.trim()).filter(Boolean);
+    if (parts.length > 1) return parts;
 
     // Try horizontal-rule separators
     const hrParts = text.split(/\n\s*[-─]{3,}\s*\n/).map(s => s.trim()).filter(Boolean);
@@ -135,7 +132,7 @@ const Engine = (() => {
   // ---------------------------------------------------------------------------
   // Main generate function
   // ---------------------------------------------------------------------------
-  async function generate({ postElement, tone, settings }) {
+  async function generate({ postElement, tone, settings, signal }) {
     const postText = extractPostText(postElement);
     if (!postText) throw new Error('Could not find post text.');
 
@@ -158,6 +155,7 @@ const Engine = (() => {
       systemPrompt,
       userPrompt,
       maxTokens: 1024,
+      signal,
     });
 
     return parseResponse(raw, draftCount);
