@@ -1,6 +1,10 @@
 const $ = id => document.getElementById(id);
 
-chrome.storage.sync.get({ endpoint: '', model: '', apiKey: '' }, data => {
+chrome.storage.local.get({ endpoint: '', model: '', apiKey: '' }, data => {
+  if (chrome.runtime.lastError) {
+    $('status').textContent = 'Load failed: ' + chrome.runtime.lastError.message;
+    return;
+  }
   $('endpoint').value = data.endpoint;
   $('model').value    = data.model;
   $('apiKey').value   = data.apiKey;
@@ -14,13 +18,20 @@ const MODEL_DEFAULTS = {
 };
 
 function saveSettings() {
-  chrome.storage.sync.set({
+  const payload = {
     endpoint: $('endpoint').value.trim(),
     model:    $('model').value.trim(),
     apiKey:   $('apiKey').value.trim(),
-  }, () => {
-    const s = $('status');
-    s.textContent = 'Saved.';
+  };
+  const s = $('status');
+  chrome.storage.local.set(payload, () => {
+    if (chrome.runtime.lastError) {
+      s.textContent = 'Error: ' + chrome.runtime.lastError.message;
+      s.style.color = '#dc2626';
+      return;
+    }
+    s.style.color = '';
+    s.textContent = 'Saved ✓';
     setTimeout(() => { s.textContent = ''; }, 1800);
   });
 }

@@ -168,7 +168,7 @@ const Engine = (() => {
   // ---------------------------------------------------------------------------
   async function loadSettings() {
     return new Promise(resolve => {
-      chrome.storage.sync.get({
+      chrome.storage.local.get({
         endpoint:     '',
         apiKey:       '',
         model:        '',
@@ -182,7 +182,7 @@ const Engine = (() => {
   }
 
   async function saveSettings(data) {
-    return new Promise(resolve => chrome.storage.sync.set(data, resolve));
+    return new Promise(resolve => chrome.storage.local.set(data, resolve));
   }
 
   return { generate, loadSettings, saveSettings, parseResponse };
