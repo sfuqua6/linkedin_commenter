@@ -301,6 +301,54 @@
       line-height: 1.5;
     }
 
+    .prov-detail code {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--border);
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-size: 10px;
+      color: var(--accent);
+      font-family: var(--mono);
+    }
+
+    /* ── Advanced callout ──────────────────────────── */
+    .adv-callout {
+      margin-bottom: 100px;
+      opacity: 0;
+      animation: fadeUp 0.7s ease 0.32s forwards;
+    }
+
+    .adv-card {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 22px 24px;
+      background: var(--surface);
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+    }
+
+    .adv-icon {
+      font-size: 20px;
+      line-height: 1;
+      flex-shrink: 0;
+      margin-top: 1px;
+      opacity: 0.6;
+    }
+
+    .adv-body h3 {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .adv-body p {
+      font-size: 12px;
+      line-height: 1.6;
+      color: var(--text-dim);
+    }
+
     .prov-tag {
       display: inline-block;
       margin-top: 10px;
@@ -489,7 +537,8 @@
       <p class="hero-sub">
         A Chrome extension that lives on LinkedIn. Pick a tone,
         generate drafts, paste with one click. Bring your own AI —
-        Anthropic, OpenAI, Ollama, or any compatible endpoint.
+        any endpoint, any model. Reasoning models like DeepSeek R1
+        work out of the box.
       </p>
     </div>
 
@@ -499,7 +548,7 @@
         <div class="download-left">
           <div class="download-label">Chrome Extension</div>
           <div class="download-title">comment-engine.zip</div>
-          <div class="download-meta">v1.1.0 · 60kb · Manifest V3</div>
+          <div class="download-meta">v1.1.0 · 13kb · Manifest V3</div>
         </div>
         <a class="download-btn" href="comment-engine.zip" download>
           Download <span class="download-arrow">↓</span>
@@ -522,8 +571,8 @@
       <div class="step">
         <div class="step-num">2</div>
         <div class="step-content">
-          <h3>Connect a provider</h3>
-          <p>Click the diamond icon in your toolbar. Pick Anthropic, OpenAI, Ollama, or any custom endpoint. Enter your key if needed.</p>
+          <h3>Connect a model</h3>
+          <p>Click the extension icon. Enter your API endpoint URL, model name, and key (optional). Use a preset chip or type any endpoint — OpenAI, Anthropic, DeepSeek, Ollama, or your own.</p>
         </div>
       </div>
 
@@ -536,29 +585,44 @@
       </div>
     </div>
 
+    <!-- Advanced settings callout -->
+    <div class="adv-callout">
+      <div class="adv-card">
+        <div class="adv-icon">⚙</div>
+        <div class="adv-body">
+          <h3>Advanced settings — always one click away</h3>
+          <p>
+            The gear link sits at the top of the popup. Click it to set your system prompt,
+            role, topics, comment length, and draft count. Everything syncs across
+            devices via Chrome storage.
+          </p>
+        </div>
+      </div>
+    </div>
+
     <!-- Providers -->
     <div class="providers">
       <div class="section-label">Bring Your Own AI</div>
       <div class="provider-grid">
         <div class="prov-card">
-          <div class="prov-name">Anthropic</div>
-          <div class="prov-detail">Claude Sonnet 4, Haiku 4.5</div>
-          <div class="prov-tag">API key</div>
-        </div>
-        <div class="prov-card">
           <div class="prov-name">OpenAI</div>
-          <div class="prov-detail">GPT-4o, GPT-4o Mini</div>
+          <div class="prov-detail">Paste your endpoint URL and model name. Any OpenAI-compatible API works.</div>
           <div class="prov-tag">API key</div>
         </div>
         <div class="prov-card">
-          <div class="prov-name">Ollama</div>
-          <div class="prov-detail">Llama, Mistral, Gemma, Phi</div>
-          <div class="prov-tag">Local · no key</div>
+          <div class="prov-name">Anthropic</div>
+          <div class="prov-detail">Messages API with automatic routing. Extended thinking blocks stripped automatically.</div>
+          <div class="prov-tag">API key</div>
         </div>
         <div class="prov-card">
-          <div class="prov-name">Custom</div>
-          <div class="prov-detail">Any OpenAI-compatible endpoint</div>
-          <div class="prov-tag">Any backend</div>
+          <div class="prov-name">DeepSeek</div>
+          <div class="prov-detail">Reasoning models supported. <code>&lt;think&gt;</code> blocks are parsed out before rendering.</div>
+          <div class="prov-tag">API key</div>
+        </div>
+        <div class="prov-card">
+          <div class="prov-name">Ollama &amp; custom</div>
+          <div class="prov-detail">Point to any local or self-hosted endpoint. Key is optional.</div>
+          <div class="prov-tag">Local · no key</div>
         </div>
       </div>
     </div>
