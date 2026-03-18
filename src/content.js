@@ -190,10 +190,12 @@
   // -------------------------------------------------------------------------
   // Inject Draft buttons into posts
   // -------------------------------------------------------------------------
-  const injected = new WeakSet();
-
   function injectButton(postElement) {
-    if (injected.has(postElement)) return;
+    // Skip if a Draft button already exists anywhere inside this post element.
+    // This handles nested selectors (e.g. .feed-shared-update-v2 inside
+    // .occludable-update) where two different post elements share the same
+    // action bar — the first one adds the button, the second sees it and bails.
+    if (postElement.querySelector('.ce-draft-btn')) return;
 
     const actionBar = postElement.querySelector(
       '.feed-shared-social-action-bar, .social-actions-bar, [data-test-id="social-actions__comment"]'
@@ -203,8 +205,6 @@
       postElement.querySelector('.feed-shared-social-counts, .update-v2-social-activity');
 
     if (!anchor) return;
-
-    injected.add(postElement);
 
     const btn = document.createElement('button');
     btn.className = 'ce-draft-btn';
