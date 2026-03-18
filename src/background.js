@@ -3,6 +3,7 @@
 
 chrome.runtime.onInstalled.addListener(({ reason }) => {
   if (reason === 'install') {
-    chrome.tabs.create({ url: 'src/options.html' });
+    // Open the popup page so users configure their endpoint first
+    chrome.tabs.create({ url: 'src/popup.html' });
   }
 });
