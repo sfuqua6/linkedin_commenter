@@ -1,0 +1,180 @@
+/* content.css — injected on linkedin.com */
+
+/* Draft button in the post action bar */
+.ce-draft-btn {
+  font-size: 13px;
+  font-weight: 600;
+  color: #0a66c2;
+  background: transparent;
+  border: 1px solid #0a66c2;
+  border-radius: 16px;
+  padding: 4px 12px;
+  cursor: pointer;
+  margin-left: 8px;
+  transition: background 0.15s, color 0.15s;
+  vertical-align: middle;
+}
+.ce-draft-btn:hover {
+  background: #0a66c2;
+  color: #fff;
+}
+
+/* Modal backdrop + dialog */
+#ce-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  align-items: center;
+  justify-content: center;
+}
+#ce-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+}
+#ce-dialog {
+  position: relative;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.22);
+  width: 480px;
+  max-width: 95vw;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* Header */
+#ce-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid #e5e7eb;
+}
+#ce-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+#ce-close {
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  color: #666;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+#ce-close:hover { background: #f3f4f6; }
+
+/* Tone buttons */
+#ce-tone-row {
+  display: flex;
+  gap: 6px;
+  padding: 10px 16px;
+  flex-wrap: wrap;
+}
+.ce-tone {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 14px;
+  border: 1.5px solid #d1d5db;
+  background: #fff;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.ce-tone:hover {
+  border-color: #0a66c2;
+  color: #0a66c2;
+}
+.ce-tone.active {
+  background: #0a66c2;
+  border-color: #0a66c2;
+  color: #fff;
+}
+
+/* Output area */
+#ce-output {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 16px 4px;
+}
+
+/* Status bar */
+#ce-status {
+  padding: 6px 16px 12px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* Draft cards */
+.ce-draft-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 10px;
+}
+.ce-draft-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #9ca3af;
+  margin-bottom: 6px;
+  letter-spacing: 0.05em;
+}
+.ce-draft-text {
+  font-size: 14px;
+  line-height: 1.55;
+  color: #111827;
+  margin: 0 0 10px;
+  white-space: pre-wrap;
+}
+.ce-draft-actions {
+  display: flex;
+  gap: 8px;
+}
+.ce-btn-primary,
+.ce-btn-secondary {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 5px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  border: none;
+  transition: opacity 0.12s;
+}
+.ce-btn-primary {
+  background: #0a66c2;
+  color: #fff;
+}
+.ce-btn-primary:hover { opacity: 0.88; }
+.ce-btn-secondary {
+  background: #f3f4f6;
+  color: #374151;
+}
+.ce-btn-secondary:hover { background: #e5e7eb; }
+
+/* Spinner */
+.ce-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid #e5e7eb;
+  border-top-color: #0a66c2;
+  border-radius: 50%;
+  animation: ce-spin 0.7s linear infinite;
+  margin: 20px auto;
+}
+@keyframes ce-spin { to { transform: rotate(360deg); } }
+
+/* Error */
+.ce-error {
+  color: #dc2626;
+  font-size: 13px;
+  margin: 10px 0;
+}
