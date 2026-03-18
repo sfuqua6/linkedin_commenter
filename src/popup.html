@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Comment Engine</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 13px;
+      color: #111827;
+      background: #fff;
+      width: 300px;
+      padding: 14px 16px 16px;
+    }
+
+    /* ── Advanced settings link — always at top ─────────────────────────── */
+    .advanced-link {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      color: #6b7280;
+      text-decoration: none;
+      margin-bottom: 14px;
+      width: fit-content;
+    }
+    .advanced-link:hover { color: #0a66c2; }
+    .advanced-link svg { flex-shrink: 0; }
+
+    /* ── Divider ─────────────────────────────────────────────────────────── */
+    hr {
+      border: none;
+      border-top: 1px solid #e5e7eb;
+      margin: 12px 0;
+    }
+
+    /* ── Section headings ────────────────────────────────────────────────── */
+    h2 {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #6b7280;
+      margin-bottom: 4px;
+      margin-top: 10px;
+    }
+    label:first-of-type { margin-top: 0; }
+
+    input[type="text"],
+    input[type="password"],
+    input[type="url"],
+    select {
+      width: 100%;
+      padding: 7px 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 13px;
+      color: #111827;
+      background: #fff;
+      outline: none;
+      transition: border-color 0.12s;
+    }
+    input:focus, select:focus { border-color: #0a66c2; }
+
+    /* Preset chips */
+    .presets {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 6px;
+    }
+    .preset-chip {
+      font-size: 11px;
+      padding: 3px 9px;
+      border: 1px solid #d1d5db;
+      border-radius: 12px;
+      background: #f9fafb;
+      cursor: pointer;
+      color: #374151;
+      transition: all 0.1s;
+    }
+    .preset-chip:hover {
+      border-color: #0a66c2;
+      color: #0a66c2;
+      background: #eff6ff;
+    }
+
+    .hint {
+      font-size: 11px;
+      color: #9ca3af;
+      margin-top: 4px;
+    }
+
+    /* ── Save button ─────────────────────────────────────────────────────── */
+    .btn-save {
+      width: 100%;
+      margin-top: 14px;
+      padding: 8px;
+      background: #0a66c2;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: opacity 0.12s;
+    }
+    .btn-save:hover { opacity: 0.88; }
+
+    #status {
+      font-size: 12px;
+      color: #16a34a;
+      text-align: center;
+      margin-top: 8px;
+      min-height: 18px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Advanced settings always at top -->
+  <a class="advanced-link" href="options.html" target="_blank">
+    <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8">
+      <circle cx="10" cy="10" r="3"/>
+      <path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.22 4.22l1.42 1.42M14.36 14.36l1.42 1.42M4.22 15.78l1.42-1.42M14.36 5.64l1.42-1.42"/>
+    </svg>
+    Advanced settings
+  </a>
+
+  <h2>Comment Engine</h2>
+
+  <!-- Endpoint -->
+  <label for="endpoint">Endpoint URL</label>
+  <input type="url" id="endpoint" placeholder="https://api.openai.com/v1/chat/completions">
+  <div class="presets">
+    <button class="preset-chip" data-endpoint="https://api.openai.com/v1/chat/completions">OpenAI</button>
+    <button class="preset-chip" data-endpoint="https://api.anthropic.com/v1/messages">Anthropic</button>
+    <button class="preset-chip" data-endpoint="https://api.deepseek.com/v1/chat/completions">DeepSeek</button>
+    <button class="preset-chip" data-endpoint="http://localhost:11434/v1/chat/completions">Ollama</button>
+  </div>
+
+  <!-- Model -->
+  <label for="model">Model</label>
+  <input type="text" id="model" placeholder="e.g. gpt-4o, claude-sonnet-4-6, deepseek-chat">
+
+  <!-- API Key -->
+  <label for="apiKey">API Key <span style="font-weight:400;text-transform:none">(leave blank if not needed)</span></label>
+  <input type="password" id="apiKey" placeholder="sk-…">
+  <p class="hint">Stored locally in Chrome. Never sent anywhere except the endpoint above.</p>
+
+  <button class="btn-save" id="save">Save</button>
+  <div id="status"></div>
+
+  <script>
+    const $ = id => document.getElementById(id);
+
+    // Load saved settings
+    chrome.storage.sync.get({ endpoint: '', model: '', apiKey: '' }, data => {
+      $('endpoint').value = data.endpoint;
+      $('model').value    = data.model;
+      $('apiKey').value   = data.apiKey;
+    });
+
+    // Preset chips fill the endpoint field and suggest a default model
+    const MODEL_DEFAULTS = {
+      'https://api.openai.com/v1/chat/completions':       'gpt-4o-mini',
+      'https://api.anthropic.com/v1/messages':            'claude-haiku-4-5-20251001',
+      'https://api.deepseek.com/v1/chat/completions':     'deepseek-chat',
+      'http://localhost:11434/v1/chat/completions':        'llama3.2',
+    };
+
+    document.querySelectorAll('.preset-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const ep = chip.dataset.endpoint;
+        $('endpoint').value = ep;
+        if (!$('model').value && MODEL_DEFAULTS[ep]) {
+          $('model').value = MODEL_DEFAULTS[ep];
+        }
+        $('endpoint').focus();
+      });
+    });
+
+    // Save
+    $('save').addEventListener('click', () => {
+      const data = {
+        endpoint: $('endpoint').value.trim(),
+        model:    $('model').value.trim(),
+        apiKey:   $('apiKey').value.trim(),
+      };
+      chrome.storage.sync.set(data, () => {
+        const s = $('status');
+        s.textContent = 'Saved!';
+        setTimeout(() => { s.textContent = ''; }, 1800);
+      });
+    });
+  </script>
+</body>
+</html>
